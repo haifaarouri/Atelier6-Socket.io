@@ -4,12 +4,45 @@
         <script src="/socket.io/socket.io.js"></script>
     </head>
     <body>
+        <form id="form">
+            <input id="input"/>
+            <button type="submit">Send</button>
+        </form>
         <script>
-            const socket = io.connect("ws://localhost:3000");
+            const socket = io.connect("ws://localhost:3000"); //connection avec le server
+
+            //la reception de l'event msg declancher par le serveur
             socket.on("msg", (data)=> {
                 console.log("data", data);
                 p = document.createElement("p");
                 p.innerText = data;
+                document.body.append(p);
+            });
+
+            var form = document.getElementById('form');
+            var input = document.getElementById('input');
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (input.value) {
+                socket.emit('chat message', input.value);
+                input.value = '';
+                }
+            });
+
+            input.addEventListener('keypress', ()=>{
+                socket.emit('IsTyping', input.value);
+            });
+
+            socket.on("IsTyping", ()=> {
+                p = document.createElement("p");
+                p.innerText = "Other user is typing...";
+                document.body.append(p);
+            });
+
+            socket.on('chat message', function(msg) {
+                var p = document.createElement('p');
+                p.innerText = msg;
                 document.body.append(p);
             });
         </script>
